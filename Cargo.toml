@@ -1,0 +1,13 @@
+[package]
+name = "data"
+version = "0.1.0"
+authors = ["noxivs <sum.noxivs@gmail.com>"]
+
+description = "This crate provides various reading and writing tools"
+repository = "https://github.com/d2ce/data-rs"
+readme = "README.md"
+keywords = ["byte", "binary", "tools"]
+license = "MIT/Apache-2.0"
+
+[dependencies]
+byteorder_extended = { git = "https://github.com/d2ce/byteorder-extended" }
