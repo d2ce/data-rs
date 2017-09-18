@@ -1,6 +1,6 @@
 # pak-rs
 
-This crate provides a packaging tool.
+This crate provides a packaging tool. For the moment, only reading and extracting tools are available.
 
 ## Usage
 
