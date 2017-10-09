@@ -161,7 +161,7 @@ where
         Ok(merge)
     }
 
-    pub fn read_file(&mut self, full_file_name: &str) -> io::Result<Vec<u8>> {
+    pub fn read_file(&self, full_file_name: &str) -> io::Result<Vec<u8>> {
          self.chunks.get(full_file_name).map(|chunk| chunk.data()).unwrap_or(
             Err(Error::new(
                 ErrorKind::InvalidInput, 
