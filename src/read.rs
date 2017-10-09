@@ -2,8 +2,10 @@ use raw::{Chunk, Info, Property, read_header};
 use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
 use std::collections::hash_map::Iter;
+use std::fs;
+use std::fs::File;
 use std::io;
-use std::io::{Error, ErrorKind, Read, Seek, SeekFrom};
+use std::io::{Error, ErrorKind, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -76,11 +78,42 @@ pub struct MergeReader<R> {
     properties: HashMap<String, String>,
 }
 
+impl MergeReader<File> {
+    pub fn open<P: AsRef<Path>>(loc: P) -> io::Result<Self> {
+        MergeReader::merge(
+            loc.as_ref(),
+            |path| File::open(path)
+        )
+    }
+
+    pub fn extract<P: AsRef<Path>>(loc: P, dest: P) -> io::Result<()> {
+        let dest = dest.as_ref();
+        let reader = MergeReader::<File>::open(&loc)?;
+
+        for (full_file_name, chunk) in reader.iter() {
+            // create the path
+            let mut output = PathBuf::from(dest);
+            output.push(full_file_name);
+
+            // create the directory paths
+            fs::create_dir_all(output.parent().unwrap())?;
+
+            // create the file
+            let mut file = File::create(&output)?;
+
+            // fill the file with the data
+            file.write_all(chunk.data().unwrap().as_slice())?;
+        }
+
+        Ok(())
+    }
+}
+
 impl<R> MergeReader<R> 
 where 
     R: Read + Seek
 {
-    pub fn new<P, F>(initial: P, make_reader: F) -> io::Result<Self> 
+    fn merge<P, F>(initial: P, make_reader: F) -> io::Result<Self> 
         where P: Into<PathBuf>,
               F: Fn(PathBuf) -> io::Result<R>
     {
@@ -89,9 +122,9 @@ where
             properties: HashMap::new()
         };
 
-        let initial = initial.into();
-
         let mut links = VecDeque::new();
+
+        let initial = initial.into();
         links.push_back(initial.clone());
 
         while {
@@ -137,7 +170,7 @@ where
         )
     }
 
-    pub fn iter(&mut self) -> Iter<String, MergedChunk<R>> {
+    pub fn iter(&self) -> Iter<String, MergedChunk<R>> {
         self.chunks.iter()
     }
 }

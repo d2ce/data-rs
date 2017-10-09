@@ -53,9 +53,9 @@
 
 extern crate byteorder_extended;
 
-mod raw;
+pub mod raw;
+
 mod read;
 mod write;
 
-pub use raw::{Property, Chunk, Info, read_header, write_header};
 pub use read::{MergedChunk, MergeReader};
